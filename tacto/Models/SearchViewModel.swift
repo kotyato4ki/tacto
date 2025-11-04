@@ -92,7 +92,7 @@ final class SearchViewModel: ObservableObject {
                 .filter { !$0.isApplication }
                 .map { hit in
                     Command(title: "Open \(hit.displayName)", keyword: "file") {
-                        FileAccessService.openWithPermission(url: hit.url)
+                        NSWorkspace.shared.open(hit.url)
                     }
                 }
             self.publishMerged(for: trimmed, generation: gen)
