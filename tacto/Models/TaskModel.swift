@@ -10,6 +10,7 @@ import Foundation
 struct TaskModel: Codable {
     var id: UUID
     var name: String
+    var description: String?
     var status: TaskStatus
     var priority: TaskPriority
     var tags: [String]
@@ -32,5 +33,54 @@ struct TaskModel: Codable {
         case low = "Low"
         
         var id: String { rawValue }
+    }
+    
+    static func getMockTasks() -> [TaskModel] {
+        return [
+            TaskModel(
+                id: UUID(),
+                name: "First task",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed egestas facilisis ex sit amet pulvinar. Phasellus eget sapien metus. Cras eleifend aliquet sollicitudin. Nulla lacinia maximus turpis, eget tincidunt diam ornare a. Cras cursus sed risus et convallis. Praesent facilisis sit amet urna eu posuere. Proin porttitor mattis elementum. Sed ut justo nisl. Nullam leo quam, malesuada at nibh at, mollis aliquet ligula. Aenean tincidunt est in condimentum luctus. Cras interdum porttitor erat et rhoncus. Vestibulum lobortis nisl quis magna venenatis posuere.",
+                status: .new,
+                priority: .high,
+                tags: ["swift", "ios", "work"]
+            ),
+            TaskModel(
+                id: UUID(),
+                name: "Second task",
+                status: .inProgress,
+                priority: .high,
+                tags: ["js", "react", "work"],
+                deadline: Calendar.current.date(byAdding: .day, value: 10, to: Date())
+            ),
+            TaskModel(
+                id: UUID(),
+                name: "Third task",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed egestas facilisis ex sit amet pulvinar. Phasellus eget sapien metus. Cras eleifend aliquet sollicitudin. Nulla lacinia maximus turpis, eget tincidunt diam ornare a. Cras cursus sed risus et convallis. Praesent facilisis sit amet urna eu posuere. Proin porttitor mattis elementum. Sed ut justo nisl. Nullam leo quam, malesuada at nibh at, mollis aliquet ligula. Aenean tincidunt est in condimentum luctus. Cras interdum porttitor erat et rhoncus. Vestibulum lobortis nisl quis magna venenatis posuere.",
+                status: .new,
+                priority: .medium,
+                tags: ["swift", "ios", "study"],
+                startDate: Calendar.current.date(byAdding: .month, value: -1, to: Date())
+            ),
+            TaskModel(
+                id: UUID(),
+                name: "Fourth task",
+                status: .done,
+                priority: .medium,
+                tags: ["go", "backend", "study"],
+                startDate: Calendar.current.date(byAdding: .day, value: -10, to: Date()),
+                deadline: Calendar.current.date(byAdding: .day, value: -1, to: Date())
+            ),
+            TaskModel(
+                id: UUID(),
+                name: "Fifth task",
+                description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed egestas facilisis ex sit amet pulvinar. Phasellus eget sapien metus. Cras eleifend aliquet sollicitudin. Nulla lacinia maximus turpis, eget tincidunt diam ornare a. Cras cursus sed risus et convallis. Praesent facilisis sit amet urna eu posuere. Proin porttitor mattis elementum. Sed ut justo nisl. Nullam leo quam, malesuada at nibh at, mollis aliquet ligula. Aenean tincidunt est in condimentum luctus. Cras interdum porttitor erat et rhoncus. Vestibulum lobortis nisl quis magna venenatis posuere.",
+                status: .cancelled,
+                priority: .low,
+                tags: ["touch grass", "walking"],
+                startDate: Calendar.current.date(byAdding: .month, value: -1, to: Date()),
+                deadline: Calendar.current.date(byAdding: .day, value: 10, to: Date())
+            )
+        ]
     }
 }
