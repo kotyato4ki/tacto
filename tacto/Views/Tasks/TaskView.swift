@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct TaskView: View {
-    var task: TaskModel
+    @State var task: TaskModel
+    @State var tempTask: EditableTaskModel = EditableTaskModel.default
     
     var body: some View {
         ScrollView {
@@ -62,22 +63,34 @@ struct TaskView: View {
                             .shadow(radius: 2)
                     )
                     
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 8) {
-                            ForEach(task.tags, id: \.self) { tag in
-                                Text("#\(tag)")
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(Color.gray.opacity(0.2))
-                                    .cornerRadius(10)
+                    // MARK: Tags
+                    VStack(alignment: .leading) {
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(task.tags, id: \.self) { tag in
+                                    Text("#\(tag)")
+                                        .padding(.horizontal, 10)
+                                        .padding(.vertical, 6)
+                                        .background(Color.gray.opacity(0.2))
+                                        .cornerRadius(10)
+                                }
                             }
                         }
-                        .padding(.horizontal)
-                    }
-                    
-                    if (task.startDate != nil || task.deadline != nil) {
-                        VStack {
-                            
+                        
+                        Spacer()
+                        
+                        NavigationLink(
+                            destination: ModifyTask(editableTask: $tempTask, originalTask: task)
+                                .onAppear {
+                                    tempTask = EditableTaskModel(from: task)
+                                }
+                                .onDisappear {
+                                    task = tempTask.toTaskModel(id: task.id)
+                                }
+                        ) {
+                            Text("Edit")
+                                .frame(width: 150)
+                                .font(.headline)
                         }
                     }
                 }

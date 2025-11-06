@@ -10,6 +10,7 @@ import SwiftUI
 struct ModifyTask: View {
     @Binding var editableTask: EditableTaskModel
     @State private var newTag: String = ""
+    let originalTask: TaskModel
     
     var body: some View {
         ScrollView {
@@ -89,8 +90,6 @@ struct ModifyTask: View {
                 }
                 
                 // MARK: Description
-                
-                
                 VStack(alignment: .leading) {
                     Text("Description")
                     
@@ -100,6 +99,9 @@ struct ModifyTask: View {
                         .font(.system(size: 16))
                 }
                 
+                Button("Revert changes") {
+                    editableTask = EditableTaskModel(from: originalTask)
+                }
             }
             .padding()
             .frame(maxWidth: 400)
@@ -109,5 +111,5 @@ struct ModifyTask: View {
 
 #Preview {
     @Previewable @State var editableTask = EditableTaskModel(from: TaskModel.getMockTasks()[0])
-    ModifyTask(editableTask: $editableTask)
+    ModifyTask(editableTask: $editableTask, originalTask: editableTask.toTaskModel(id: UUID()))
 }

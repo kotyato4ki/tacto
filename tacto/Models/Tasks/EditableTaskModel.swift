@@ -42,4 +42,15 @@ struct EditableTaskModel {
             deadline: includeDeadline ? deadline : nil
         )
     }
+    
+    static let `default` = EditableTaskModel(from: TaskModel(
+        id: UUID(),
+        name: "",
+        description: "",
+        status: .new,
+        priority: .medium,
+        tags: [],
+        startDate: Date(),
+        deadline: Date()
+    ))
 }
