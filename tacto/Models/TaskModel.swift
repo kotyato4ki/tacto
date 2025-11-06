@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 
 struct TaskModel: Codable {
     var id: UUID
@@ -33,6 +34,23 @@ struct TaskModel: Codable {
         case low = "Low"
         
         var id: String { rawValue }
+    }
+    
+    static func color(for status: TaskStatus) -> Color {
+        switch status {
+        case .new: return .blue
+        case .inProgress: return .orange
+        case .done: return .green
+        case .cancelled: return .red
+        }
+    }
+
+    static func color(for priority: TaskPriority) -> Color {
+        switch priority {
+        case .high: return .red
+        case .medium: return .yellow
+        case .low: return .green
+        }
     }
     
     static func getMockTasks() -> [TaskModel] {

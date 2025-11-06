@@ -10,23 +10,6 @@ import SwiftUI
 struct TaskView: View {
     var task: TaskModel
     
-    func color(for status: TaskModel.TaskStatus) -> Color {
-        switch status {
-        case .new: return .blue
-        case .inProgress: return .orange
-        case .done: return .green
-        case .cancelled: return .red
-        }
-    }
-
-    func color(for priority: TaskModel.TaskPriority) -> Color {
-        switch priority {
-        case .high: return .red
-        case .medium: return .yellow
-        case .low: return .green
-        }
-    }
-    
     var body: some View {
         ScrollView {
             VStack {
@@ -39,11 +22,11 @@ struct TaskView: View {
                         HStack(spacing: 12) {
                             Label(task.status.rawValue, systemImage: "circle.fill")
                                 .font(.subheadline)
-                                .foregroundColor(color(for: task.status))
+                                .foregroundColor(TaskModel.color(for: task.status))
                             
                             Label(task.priority.rawValue, systemImage: "flag.fill")
                                 .font(.subheadline)
-                                .foregroundColor(color(for: task.priority))
+                                .foregroundColor(TaskModel.color(for: task.priority))
                         }
 
                         if (task.startDate != nil || task.deadline != nil) {
