@@ -12,11 +12,11 @@ struct TaskPreview: View {
     
     var body: some View {
         
-        VStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: 12) {
             Text(task.name)
                 .font(.title)
             
-            HStack(alignment: .top, spacing: 8) {
+            HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 12) {
                     Label(task.status.rawValue, systemImage: "circle.fill")
                         .font(.subheadline)
@@ -26,9 +26,15 @@ struct TaskPreview: View {
                         .font(.subheadline)
                         .foregroundColor(TaskModel.color(for: task.priority))
                 }
+                .frame(width: 100, alignment: .leading)
                 
                 if (task.startDate != nil || task.deadline != nil) {
                     Divider()
+                        .padding(.horizontal, 5)
+                        .frame(height: 40)
+                } else {
+                    Divider()
+                        .opacity(0)
                         .padding(.horizontal, 5)
                         .frame(height: 40)
                 }
@@ -54,8 +60,23 @@ struct TaskPreview: View {
                         }
                     }
                 }
+                .frame(width: 200, alignment: .leading)
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(task.tags, id: \.self) { tag in
+                        Text("#\(tag)")
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color.gray.opacity(0.2))
+                            .cornerRadius(10)
+                    }
+                }
+                .padding(.horizontal)
             }
         }
+        .frame(width: 350)
         .padding(12)
     }
 }
