@@ -13,7 +13,7 @@ final class SpotlightService: NSObject {
     deinit { stop() }
 
     func search(term: String, appsOnly: Bool, limit: Int = 10, completion: @escaping ([Hit]) -> Void) {
-        stop() // отменяем предыдущий запрос
+        stop()
 
         let t = term.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !t.isEmpty else { completion([]); return }

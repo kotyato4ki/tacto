@@ -55,7 +55,6 @@ struct SearchView: View {
     }
 }
 
-/// Отдельная строка — разгружает тайпчекер и делает код читабельнее
 private struct SuggestionRow: View {
     let title: String
     let keyword: String
@@ -81,7 +80,6 @@ private struct SuggestionRow: View {
     }
 }
 
-// Локальный монитор клавиатуры
 private struct KeyEventMonitor: NSViewRepresentable {
     let onEvent: (NSEvent) -> Bool
 

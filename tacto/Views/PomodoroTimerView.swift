@@ -39,15 +39,12 @@ struct PomodoroTimerView: View {
                     .padding(.bottom, 6)
 
                 Divider()
+                
                 VStack(alignment: .leading, spacing: 4) {
                     Button(action: {
+                        showTodayStatsWindow()
                     }) {
-                        Label("Statistics for today", systemImage: "chart.bar")
-                    }
-
-                    Button(action: {
-                    }) {
-                        Label("Statistics for last week", systemImage: "calendar")
+                        Label("Show statistics", systemImage: "chart.bar")
                     }
                 }
                 .buttonStyle(.plain)
@@ -57,5 +54,17 @@ struct PomodoroTimerView: View {
         }
         .padding(12)
         .frame(width: 200)
+    }
+    
+    func showTodayStatsWindow() {
+        let view = StatisticView().frame(width: 400, height: 500)
+        let hosting = NSHostingController(rootView: view)
+        let window = NSWindow(contentViewController: hosting)
+        window.setContentSize(NSSize(width: 400, height: 500))
+        window.styleMask = [.titled, .closable]
+        window.center()
+        window.makeKeyAndOrderFront(nil)
+        window.title = "Tacto Statistics"
+        NSApp.activate(ignoringOtherApps: true)
     }
 }
