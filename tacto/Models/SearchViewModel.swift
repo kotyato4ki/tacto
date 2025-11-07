@@ -6,18 +6,12 @@ import AppKit
 final class SearchViewModel: ObservableObject {
     @Published var query: String = ""
     @Published private(set) var suggestions: [Command] = []
-    @Published var selectedIndex: Int = 0   // <— текущая выделенная строка
+    @Published var selectedIndex: Int = 0   // текущая выделенная строка
 
     var onSubmit: ((Command?) -> Void)?
     var onCancel: (() -> Void)?
 
-    // Базовые команды для пустого ввода
-    private var allCommands: [Command] = [
-        Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
-        Command(title: "Start Pomodoro", keyword: "pomodoro") { print("Action: Start Pomodoro") },
-        Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
-        Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
-    ]
+    private var allCommands: [Command] = []
 
     private let spotlightApps  = SpotlightService()
     private let spotlightFiles = SpotlightService()
@@ -28,8 +22,17 @@ final class SearchViewModel: ObservableObject {
     private var generation = 0 // защита от гонок
     private var currentApps:  [Command] = []
     private var currentFiles: [Command] = []
+    let pomodoroTimerVM: PomodoroTimerViewModel
 
-    init() {
+    init(pomodoroTimerVM: PomodoroTimerViewModel) {
+        self.pomodoroTimerVM = pomodoroTimerVM
+        allCommands = [
+            Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
+            Command(title: "Start Pomodoro", keyword: "pomodoro") { [weak self] in self?.startPomodoroIfNecessary() },
+            Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
+            Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
+        ]
+
         $query
             .removeDuplicates()
             .debounce(for: .milliseconds(120), scheduler: RunLoop.main)
@@ -39,6 +42,14 @@ final class SearchViewModel: ObservableObject {
             .store(in: &bag)
 
         suggestions = allCommands
+    }
+
+    private func startPomodoroIfNecessary() {
+        let pattern = #"pomodoro\s*(\d+)"#
+        if let match = query.range(of: pattern, options: .regularExpression),
+           let minutes = Int(query[match].components(separatedBy: " ").last ?? "") {
+            pomodoroTimerVM.start(minutes: minutes)
+        }
     }
 
     private func buildSuggestions(for text: String) {
@@ -54,25 +65,36 @@ final class SearchViewModel: ObservableObject {
             return
         }
 
-        // Новое поколение запроса
         generation &+= 1
         let gen = generation
         currentApps.removeAll()
         currentFiles.removeAll()
         selectedIndex = 0
 
-        // Показать сразу веб-кнопку (потом дополним локальными результатами)
-        suggestions = [
+        var extraCommands: [Command] = []
+        if let minutes = extractPomodoroMinutes(from: trimmed) {
+            extraCommands.append(
+                Command(
+                    title: "Start Pomodoro for \(minutes) min",
+                    keyword: "pomodoro",
+                    action: { [weak self] in
+                        self?.pomodoroTimerVM.start(minutes: minutes)
+                    }
+                )
+            )
+        }
+
+        var baseSuggestions = extraCommands
+        baseSuggestions.append(
             Command(title: "Search “\(trimmed)” on the Web", keyword: "web") {
                 WebSearchService.open(query: trimmed, engine: self.defaultWebEngine)
             }
-        ]
+        )
+        suggestions = baseSuggestions
 
-        // Сброс прошлых поисков
         spotlightApps.stop()
         spotlightFiles.stop()
 
-        // Параллельно: приложения
         spotlightApps.search(term: trimmed, appsOnly: true, limit: 6) { [weak self] hits in
             guard let self, gen == self.generation else { return }
             self.currentApps = hits.map { hit in
@@ -82,10 +104,9 @@ final class SearchViewModel: ObservableObject {
                     NSWorkspace.shared.openApplication(at: hit.url, configuration: cfg, completionHandler: nil)
                 }
             }
-            self.publishMerged(for: trimmed, generation: gen)
+            self.publishMerged(for: trimmed, generation: gen, extra: extraCommands)
         }
 
-        // Параллельно: файлы
         spotlightFiles.search(term: trimmed, appsOnly: false, limit: 10) { [weak self] hits in
             guard let self, gen == self.generation else { return }
             self.currentFiles = hits
@@ -95,20 +116,31 @@ final class SearchViewModel: ObservableObject {
                         NSWorkspace.shared.open(hit.url)
                     }
                 }
-            self.publishMerged(for: trimmed, generation: gen)
+            self.publishMerged(for: trimmed, generation: gen, extra: extraCommands)
         }
     }
 
-    private func publishMerged(for text: String, generation gen: Int) {
+    private func extractPomodoroMinutes(from text: String) -> Int? {
+        let pattern = #"pomodoro[\s:]+(\d+)"#
+        if let match = text.range(of: pattern, options: .regularExpression) {
+            let captured = text[match].split(separator: " ").last
+            return captured.flatMap { Int($0) }
+        }
+        return nil
+    }
+
+    private func publishMerged(for text: String, generation gen: Int, extra: [Command] = []) {
         guard gen == generation else { return }
         var merged: [Command] = []
+        merged.append(contentsOf: extra)
         merged.append(contentsOf: currentApps)
         merged.append(contentsOf: currentFiles)
-        merged.append(Command(title: "Search “\(text)” on the Web", keyword: "web") {
-            WebSearchService.open(query: text, engine: self.defaultWebEngine)
-        })
+        merged.append(
+            Command(title: "Search “\(text)” on the Web", keyword: "web") {
+                WebSearchService.open(query: text, engine: self.defaultWebEngine)
+            }
+        )
         suggestions = merged
-        // держим индекс в пределах
         if !suggestions.indices.contains(selectedIndex) {
             selectedIndex = suggestions.isEmpty ? 0 : 0
         }
@@ -123,10 +155,13 @@ final class SearchViewModel: ObservableObject {
 
     func submitSelected() {
         guard suggestions.indices.contains(selectedIndex) else {
-            onSubmit?(nil); return
+            onSubmit?(nil)
+            return
         }
         onSubmit?(suggestions[selectedIndex])
     }
 
-    func cancel() { onCancel?() }
+    func cancel() {
+        onCancel?()
+    }
 }

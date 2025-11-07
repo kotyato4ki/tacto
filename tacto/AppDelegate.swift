@@ -8,8 +8,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // VM верхнего уровня
-        let searchVM = SearchViewModel()
-        let appVM = AppViewModel(searchVM: searchVM)
+        let pomodoroTimerVM = PomodoroTimerViewModel()
+        let searchVM = SearchViewModel(pomodoroTimerVM: pomodoroTimerVM)
+        let appVM = AppViewModel(searchVM: searchVM, pomodoroTimerVM: pomodoroTimerVM)
         self.appVM = appVM
 
         // Вью (SwiftUI), которое будет в плавающем окне
@@ -22,9 +23,23 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.windowService = windowService
 
         let statusBar = StatusBarService(
-            onToggle: { [weak self] in self?.appVM?.toggleLauncher() },
-            onQuit: { NSApp.terminate(nil) }
+            onToggleWindows: { [weak self] in
+                guard let self else { return }
+                if let appVM = self.appVM, appVM.isPomodoroVisible {
+                    appVM.hidePomodoro()
+                } else if let appVM = self.appVM, appVM.isLauncherVisible {
+                    appVM.hideLauncher()
+                } else {
+                    self.appVM?.showLauncher()
+                }
+            },
+            onQuit: { NSApp.terminate(nil) },
+            pomodoroTimerVM: appVM.pomodoroTimerVM,
+            onToggleLauncherToHide: { [weak self] in
+                self?.appVM?.hideLauncher()
+            }
         )
+        
         self.statusBar = statusBar
 
         let hotKey = HotKeyService(optionSpaceHandler: { [weak self] in
@@ -33,7 +48,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         self.hotKey = hotKey
 
         // Подписка VM → UI-сервис
-        appVM.onShow = { [weak self] in self?.windowService?.show() }
-        appVM.onHide = { [weak self] in self?.windowService?.hide() }
+        appVM.onShowLauncher = { [weak self] in self?.windowService?.show() }
+        appVM.onHideLauncher = { [weak self] in self?.windowService?.hide() }
     }
 }
