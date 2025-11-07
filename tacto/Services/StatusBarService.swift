@@ -31,6 +31,8 @@ final class StatusBarService {
         quitItem.target = self
         let showTimerItem = NSMenuItem(title: "Pomodoro Timer", action: #selector(togglePopover), keyEquivalent: "p")
         showTimerItem.target = self
+        let tasksItem = NSMenuItem(title: "Tasks", action: #selector(openTasks), keyEquivalent: "t")
+        tasksItem.target = self
 
         menu.addItem(openItem)
         menu.addItem(.separator())
@@ -122,5 +124,9 @@ final class StatusBarService {
             popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
             NSApp.activate(ignoringOtherApps: true)
         }
+    }
+    
+    @objc private func openTasks() {
+        
     }
 }
