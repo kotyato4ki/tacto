@@ -83,7 +83,7 @@ struct StatisticView: View {
                     .fill(Color(NSColor.controlBackgroundColor))
                     .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
 
-                List(currentSessions()) { session in
+                List(currentSessions().reversed()) { session in
                     HStack {
                         VStack(alignment: .leading) {
                             Text(session.startDate, style: .date)
