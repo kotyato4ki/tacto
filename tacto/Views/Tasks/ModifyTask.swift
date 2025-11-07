@@ -10,6 +10,7 @@ import SwiftUI
 struct ModifyTask: View {
     @Binding var editableTask: EditableTaskModel
     @State private var newTag: String = ""
+
     let originalTask: TaskModel
     
     var body: some View {

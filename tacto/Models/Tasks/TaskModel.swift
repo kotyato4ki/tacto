@@ -36,9 +36,31 @@ struct TaskModel: Identifiable {
         var id: String { rawValue }
     }
     
+    init(from dto: TaskDTO) {
+        self.id = dto.id
+        self.name = dto.name
+        self.description = dto.taskDescription
+        self.status = dto.status
+        self.priority = dto.priority
+        self.tags = dto.tags
+        self.startDate = dto.startDate
+        self.deadline = dto.deadline
+    }
+    
+    init(id: UUID, name: String, description: String? = nil, status: TaskStatus, priority: TaskPriority, tags: [String], startDate: Date? = nil, deadline: Date? = nil) {
+        self.id = id
+        self.name = name
+        self.description = description
+        self.status = status
+        self.priority = priority
+        self.tags = tags
+        self.startDate = startDate
+        self.deadline = deadline
+    }
+    
     static func color(for status: TaskStatus) -> Color {
         switch status {
-        case .new: return .blue
+        case .new: return .white
         case .inProgress: return .orange
         case .done: return .green
         case .cancelled: return .red
@@ -51,6 +73,19 @@ struct TaskModel: Identifiable {
         case .medium: return .yellow
         case .low: return .green
         }
+    }
+    
+    func toDTO() -> TaskDTO {
+        return TaskDTO(
+            id: id,
+            name: name,
+            taskDescription: description,
+            status: status,
+            priority: priority,
+            tags: tags,
+            startDate: startDate,
+            deadline: deadline
+        )
     }
     
     static func getMockTasks() -> [TaskModel] {

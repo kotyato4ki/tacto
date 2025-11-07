@@ -91,6 +91,7 @@ struct TaskView: View {
                                         tasksVM.tasks[pos] = updatedTask
                                     }
                                     task = updatedTask
+                                    tasksVM.lastChangedTask = updatedTask
                                 }
                         ) {
                             Text("Edit")

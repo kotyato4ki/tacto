@@ -9,22 +9,34 @@ import SwiftUI
 
 struct TaskList: View {
     @ObservedObject var tasksVM: TasksViewModel
+    @State private var showAddTaskView = false
+    @State private var newTask = EditableTaskModel.default
     
     var body: some View {
         NavigationStack {
-            List {
-                ForEach(tasksVM.tasks) { task in
-                    NavigationLink(destination: TaskView(task: task, tasksVM: tasksVM)) {
-                        TaskPreview(task: task)
-                            .frame(maxWidth: .infinity)
-                            .background(Color(NSColor.windowBackgroundColor))
-                            .clipShape(RoundedRectangle(cornerRadius: 6))
-                            .padding(.horizontal, 8)
-                    }
-                    .buttonStyle(.plain)
+            
+            VStack {
+                
+                NavigationLink(destination: CreateTaskView(tasksVM: tasksVM)) {
+                    Text("Add Task")
+                        .font(.title2)
                 }
+                .padding(.top, 10)
+                
+                List {
+                    ForEach(tasksVM.tasks) { task in
+                        NavigationLink(destination: TaskView(task: task, tasksVM: tasksVM)) {
+                            TaskPreview(task: task)
+                                .frame(maxWidth: .infinity)
+                                .background(Color(NSColor.windowBackgroundColor))
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .padding(.horizontal, 8)
+                        }
+                        .buttonStyle(.plain)
+                    }
+                }
+                .listStyle(.sidebar)
             }
-            .listStyle(.sidebar)
         }
     }
 }
