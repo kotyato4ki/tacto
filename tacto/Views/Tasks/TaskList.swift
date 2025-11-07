@@ -8,13 +8,13 @@
 import SwiftUI
 
 struct TaskList: View {
-    var tasks: [TaskModel]
+    @ObservedObject var tasksVM: TasksViewModel
     
     var body: some View {
         NavigationStack {
             List {
-                ForEach(tasks) { task in
-                    NavigationLink(destination: TaskView(task: task)) {
+                ForEach(tasksVM.tasks) { task in
+                    NavigationLink(destination: TaskView(task: task, tasksVM: tasksVM)) {
                         TaskPreview(task: task)
                             .frame(maxWidth: .infinity)
                             .background(Color(NSColor.windowBackgroundColor))
@@ -30,5 +30,5 @@ struct TaskList: View {
 }
 
 #Preview {
-    TaskList(tasks: TaskModel.getMockTasks())
+    TaskList(tasksVM: TasksViewModel(tasks: TaskModel.getMockTasks()))
 }

@@ -10,6 +10,7 @@ import SwiftUI
 struct TaskView: View {
     @State var task: TaskModel
     @State var tempTask: EditableTaskModel = EditableTaskModel.default
+    @ObservedObject var tasksVM: TasksViewModel
     
     var body: some View {
         ScrollView {
@@ -85,7 +86,11 @@ struct TaskView: View {
                                     tempTask = EditableTaskModel(from: task)
                                 }
                                 .onDisappear {
-                                    task = tempTask.toTaskModel(id: task.id)
+                                    let updatedTask = tempTask.toTaskModel(id: task.id)
+                                    if let pos = tasksVM.tasks.firstIndex(where: { $0.id == task.id }) {
+                                        tasksVM.tasks[pos] = updatedTask
+                                    }
+                                    task = updatedTask
                                 }
                         ) {
                             Text("Edit")
@@ -106,5 +111,7 @@ struct TaskView: View {
 }
 
 #Preview {
-    TaskView(task: TaskModel.getMockTasks()[4])
+    let tasks = TaskModel.getMockTasks()
+    let tasksVM = TasksViewModel(tasks: tasks)
+    TaskView(task: tasks[4], tasksVM: tasksVM)
 }

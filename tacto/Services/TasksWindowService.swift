@@ -13,17 +13,19 @@ import AppKit
 final class TasksWindowService: ObservableObject {
     private var window: NSWindow?
     private var tasks: [TaskModel] = []
+    private var tasksVM: TasksViewModel
     
     private var tasksWindowService: TasksWindowService?
     
     init() {
         // Загружаем тестовые данные или реальные данные
         self.tasks = TaskModel.getMockTasks()
+        self.tasksVM = TasksViewModel(tasks: tasks)
         setupWindow()
     }
     
     private func setupWindow() {
-        let taskListView = TaskList(tasks: tasks)
+        let taskListView = TaskList(tasksVM: tasksVM)
             .frame(minWidth: 400, idealWidth: 500, minHeight: 400, idealHeight: 600)
         
         let hostingController = NSHostingController(rootView: taskListView)

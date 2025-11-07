@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 
-struct TaskModel: Codable, Identifiable {
+struct TaskModel: Identifiable {
     var id: UUID
     var name: String
     var description: String?
