@@ -12,12 +12,14 @@ final class SearchViewModel: ObservableObject {
     var onCancel: (() -> Void)?
 
     // Базовые команды для пустого ввода
-    private var allCommands: [Command] = [
-        Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
-        Command(title: "Start Pomodoro", keyword: "pomodoro") { print("Action: Start Pomodoro") },
-        Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
-        Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
-    ]
+    private lazy var allCommands: [Command] = {
+        [
+            Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
+            Command(title: "Start Pomodoro", keyword: "pomodoro") { print("Action: Start Pomodoro") },
+            Command(title: "Clipboard", keyword: "clip") { [weak self] in self?.query = "clip " },
+            Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
+        ]
+    }()
 
     private let spotlightApps  = SpotlightService()
     private let spotlightFiles = SpotlightService()
@@ -40,9 +42,23 @@ final class SearchViewModel: ObservableObject {
 
         suggestions = allCommands
     }
-
+     
     private func buildSuggestions(for text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Режим буфера обмена: "clip" или "clipboard"
+        if trimmed.hasPrefix("clip") || trimmed.hasPrefix("clipboard") {
+            let term = text.replacingOccurrences(of: "clipboard", with: "clip")
+            let searchTerm = term.dropFirst(4).trimmingCharacters(in: .whitespaces)
+            let items = ClipboardService.shared.filteredItems(matching: searchTerm.isEmpty ? nil : String(searchTerm))
+            suggestions = items.map { item in
+                Command(title: item.displayText, keyword: "clip") {
+                    ClipboardService.shared.pasteIntoFrontmostApp(item)
+                }
+            }
+            selectedIndex = suggestions.isEmpty ? 0 : 0
+            return
+        }
 
         guard !trimmed.isEmpty else {
             spotlightApps.stop()

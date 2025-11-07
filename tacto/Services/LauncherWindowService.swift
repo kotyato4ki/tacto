@@ -6,6 +6,7 @@ final class LauncherWindowService {
     private var localClickMonitor: Any?
     private var globalClickMonitor: Any?
     private var observers: [NSObjectProtocol] = []
+    private var previousApp: NSRunningApplication?
 
     init<Content: View>(rootView: Content) {
         let size = NSSize(width: 740, height: 180)   // чуть выше — под списки
@@ -13,7 +14,7 @@ final class LauncherWindowService {
 
         let panel = NSPanel(
             contentRect: rect,
-            styleMask: [.titled, .fullSizeContentView],
+            styleMask: [.titled, .fullSizeContentView, .nonactivatingPanel],
             backing: .buffered,
             defer: false
         )
@@ -21,9 +22,12 @@ final class LauncherWindowService {
         panel.titlebarAppearsTransparent = true
         panel.isMovableByWindowBackground = true
         panel.isReleasedWhenClosed = false
-        panel.level = .floating
+        panel.isFloatingPanel = true
+        panel.level = .popUpMenu
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.backgroundColor = .clear
+        panel.isOpaque = false
+        panel.hidesOnDeactivate = false
         panel.hasShadow = true
         panel.standardWindowButton(.closeButton)?.isHidden = true
         panel.standardWindowButton(.miniaturizeButton)?.isHidden = true
@@ -53,20 +57,35 @@ final class LauncherWindowService {
     }
 
     func show() {
-        guard let screen = NSScreen.main else { return }
+        // Запоминаем текущее активное приложение, чтобы вернуть фокус после скрытия окна
+        previousApp = NSWorkspace.shared.frontmostApplication
+
+        // Выбираем экран под курсором, чтобы окно появлялось там, где пользователь
+        let mouse = NSEvent.mouseLocation
+        let targetScreen = NSScreen.screens.first { screen in
+            screen.frame.contains(mouse)
+        } ?? NSScreen.main
+
+        guard let screen = targetScreen else { return }
         let vf = screen.visibleFrame
         let x = vf.midX - window.frame.width / 2
         let y = vf.midY - window.frame.height / 2 + vf.height * 0.1
         window.setFrameOrigin(NSPoint(x: x, y: y))
 
-        NSApp.activate(ignoringOtherApps: true)
-        window.makeKeyAndOrderFront(nil)
+        // Не активируем всё приложение, чтобы не выходить из фуллскрина чужого приложения
+        window.setIsVisible(true)
+        window.orderFrontRegardless()
         startMonitors()
     }
 
     func hide() {
         stopMonitors()
         window.orderOut(nil)
+        // Возвращаем фокус в предыдущее приложение (если было)
+        if let app = previousApp {
+            app.activate(options: [.activateIgnoringOtherApps])
+        }
+        previousApp = nil
     }
 
     private func startMonitors() {

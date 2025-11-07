@@ -2,12 +2,20 @@ import Foundation
 import Carbon.HIToolbox
 
 final class HotKeyService {
-    private var hotKeyRef: EventHotKeyRef?
+    private var hotKeyRefs: [EventHotKeyRef?] = []
     private var eventHandler: EventHandlerRef?
     private let onPress: () -> Void
 
-    init(optionSpaceHandler: @escaping () -> Void) {
-        self.onPress = optionSpaceHandler
+    struct Combo { let keyCode: UInt32; let modifiers: UInt32 }
+
+    init(onActivate: @escaping () -> Void,
+         combos: [Combo] = [
+            // ⌘ Space — как у Spotlight (требует освободить шорткат в настройках)
+            Combo(keyCode: UInt32(kVK_Space), modifiers: UInt32(cmdKey)),
+            // ⌘⇧ Space — запасной, если основной занят
+            Combo(keyCode: UInt32(kVK_Space), modifiers: UInt32(cmdKey | shiftKey))
+         ]) {
+        self.onPress = onActivate
 
         var eventType = EventTypeSpec(
             eventClass: OSType(kEventClassKeyboard),
@@ -31,31 +39,31 @@ final class HotKeyService {
         )
 
         if installStatus != noErr {
-            // опционально: лог/обработка ошибки установки обработчика
             // print("InstallEventHandler failed with status \(installStatus)")
         }
 
-        let hotKeyID = EventHotKeyID(signature: OSType(0x464C4331), id: 1)
-        let keyCode = UInt32(kVK_Space)
-        let modifiers = UInt32(optionKey) // ⌥
-
-        let regStatus = RegisterEventHotKey(
-            keyCode,
-            modifiers,
-            hotKeyID,
-            GetApplicationEventTarget(),
-            0,
-            &hotKeyRef
-        )
-
-        if regStatus != noErr {
-            // опционально: лог/обработка ошибки регистрации хоткея
-            // print("RegisterEventHotKey failed with status \(regStatus)")
+        for (idx, combo) in combos.enumerated() {
+            var ref: EventHotKeyRef?
+            let hotKeyID = EventHotKeyID(signature: OSType(0x464C4331), id: UInt32(idx + 1))
+            let status = RegisterEventHotKey(
+                combo.keyCode,
+                combo.modifiers,
+                hotKeyID,
+                GetApplicationEventTarget(),
+                0,
+                &ref
+            )
+            if status == noErr {
+                hotKeyRefs.append(ref)
+            } else {
+                hotKeyRefs.append(nil)
+                // print("RegisterEventHotKey failed: combo \(combo) status \(status)")
+            }
         }
     }
 
     deinit {
-        if let hk = hotKeyRef { UnregisterEventHotKey(hk) }
+        for hk in hotKeyRefs { if let hk { UnregisterEventHotKey(hk) } }
         if let handler = eventHandler { RemoveEventHandler(handler) }
     }
 }
