@@ -8,9 +8,9 @@ final class SearchViewModel: ObservableObject {
     @Published private(set) var suggestions: [Command] = []
     @Published var selectedIndex: Int = 0   // <— текущая выделенная строка
     
-    private let tasksVM = TasksViewModel()
-    private var tasksWindowService: TasksWindowService?
-    private var createTaskWindowService: CreateTaskWindowService?
+    private let tasksVM: TasksViewModel
+    private let tasksWindowService: TasksWindowService
+    private let createTaskWindowService: CreateTaskWindowService
     
     var onSubmit: ((Command?) -> Void)?
     var onCancel: (() -> Void)?
@@ -29,6 +29,11 @@ final class SearchViewModel: ObservableObject {
     private var currentFiles: [Command] = []
     
     init() {
+        let tasksVM = TasksViewModel()
+        self.tasksVM = tasksVM
+        self.tasksWindowService = .init(with: tasksVM)
+        self.createTaskWindowService = .init(with: tasksVM)
+        
         allCommands = [
             Command(title: "Open Tasks", keyword: "tasks") { [weak self] in
                 print("Action: Open Tasks")
@@ -53,20 +58,8 @@ final class SearchViewModel: ObservableObject {
         suggestions = allCommands
     }
     
-    private func openTasksWindow() {
-        // Создаем или показываем окно с задачами
-        if tasksWindowService == nil {
-            tasksWindowService = TasksWindowService(with: tasksVM)
-        }
-        tasksWindowService?.show()
-    }
-    
-    private func openCreateTaskWindow() {
-        if createTaskWindowService == nil {
-            createTaskWindowService = CreateTaskWindowService(with: tasksVM)
-        }
-        createTaskWindowService?.show()
-    }
+    private func openTasksWindow() { tasksWindowService.show() }
+    private func openCreateTaskWindow() { createTaskWindowService.show() }
     
     private func buildSuggestions(for text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
