@@ -63,10 +63,12 @@ final class StatusBarService {
             .receive(on: RunLoop.main)
             .sink { [weak self] seconds in
                 guard let button = self?.statusItem.button else { return }
-                if self?.pomodoroTimerVM.isActive == true {
+                if self?.pomodoroTimerVM.isActive == true && seconds > 0  {
                     let minutes = seconds / 60
                     let secs = seconds % 60
                     button.title = String(format: "%d:%02d", minutes, secs)
+                } else {
+                    button.title = ""
                 }
             }
             .store(in: &cancellables)
