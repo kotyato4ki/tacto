@@ -12,14 +12,18 @@ final class StatusBarService {
     private let pomodoroTimerVM: PomodoroTimerViewModel
     private let onToggleLauncherToHide: () -> Void
     private var popover: NSPopover
+    private let onOpenTasks: () -> Void
+    private let onOpenCreateTasks: () -> Void
     private var cancellables = Set<AnyCancellable>()
 
-    init(onToggleWindows: @escaping () -> Void, onQuit: @escaping () -> Void, pomodoroTimerVM: PomodoroTimerViewModel, onToggleLauncherToHide: @escaping () -> Void) {
+    init(onToggleWindows: @escaping () -> Void, onQuit: @escaping () -> Void, pomodoroTimerVM: PomodoroTimerViewModel, onToggleLauncherToHide: @escaping () -> Void, onOpenTasks: @escaping () -> Void, onOpenCreateTasks: @escaping () -> Void) {
         self.onToggleWindows = onToggleWindows
         self.onQuit = onQuit
         self.pomodoroTimerVM = pomodoroTimerVM
         self.onToggleLauncherToHide = onToggleLauncherToHide
         self.popover = NSPopover()
+        self.onOpenTasks = onOpenTasks
+        self.onOpenCreateTasks = onOpenCreateTasks
 
         setupStatusItem()
         setupPopover()
@@ -31,12 +35,19 @@ final class StatusBarService {
         quitItem.target = self
         let showTimerItem = NSMenuItem(title: "Pomodoro Timer", action: #selector(togglePopover), keyEquivalent: "p")
         showTimerItem.target = self
-
+        let tasksItem = NSMenuItem(title: "Tasks", action: #selector(openTasks), keyEquivalent: "t")
+        tasksItem.target = self
+        let createTaskItem = NSMenuItem(title: "Create Task", action: #selector(openCreateTasks), keyEquivalent: "c")
+        createTaskItem.target = self
+        
         menu.addItem(openItem)
         menu.addItem(.separator())
         menu.addItem(showTimerItem)
         menu.addItem(.separator())
         menu.addItem(quitItem)
+        menu.addItem(.separator())
+        menu.addItem(tasksItem)
+        menu.addItem(createTaskItem)
     }
     
     private func setupStatusItem() {
@@ -123,4 +134,7 @@ final class StatusBarService {
             NSApp.activate(ignoringOtherApps: true)
         }
     }
+    
+    @objc private func openTasks() { self.onOpenTasks() }
+    @objc private func openCreateTasks() { self.onOpenCreateTasks() }
 }

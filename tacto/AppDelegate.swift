@@ -9,7 +9,20 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
         // VM верхнего уровня
         let pomodoroTimerVM = PomodoroTimerViewModel()
-        let searchVM = SearchViewModel(pomodoroTimerVM: pomodoroTimerVM)
+        
+        let tasksVM = TasksViewModel()
+        let tasksWindowService = TasksWindowService(with: tasksVM)
+        let createTaskWindowService = CreateTaskWindowService(with: tasksVM)
+        
+        let searchVM = SearchViewModel(
+            pomodoroTimerVM: pomodoroTimerVM,
+            openTasksWindow: {
+                tasksWindowService.show()
+            },
+            openCreateTaskWindow: {
+                createTaskWindowService.show()
+            })
+        
         let appVM = AppViewModel(searchVM: searchVM, pomodoroTimerVM: pomodoroTimerVM)
         self.appVM = appVM
 
@@ -37,6 +50,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             pomodoroTimerVM: appVM.pomodoroTimerVM,
             onToggleLauncherToHide: { [weak self] in
                 self?.appVM?.hideLauncher()
+            },
+            onOpenTasks: {
+                tasksWindowService.show()
+            },
+            onOpenCreateTasks: {
+                createTaskWindowService.show()
             }
         )
         

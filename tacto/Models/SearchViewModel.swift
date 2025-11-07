@@ -8,10 +8,6 @@ final class SearchViewModel: ObservableObject {
     @Published private(set) var suggestions: [Command] = []
     @Published var selectedIndex: Int = 0   // <— текущая выделенная строка
     
-    private let tasksVM: TasksViewModel
-    private let tasksWindowService: TasksWindowService
-    private let createTaskWindowService: CreateTaskWindowService
-    
     var onSubmit: ((Command?) -> Void)?
     var onCancel: (() -> Void)?
     
@@ -30,18 +26,18 @@ final class SearchViewModel: ObservableObject {
 
     let pomodoroTimerVM: PomodoroTimerViewModel
 
-    init(pomodoroTimerVM: PomodoroTimerViewModel) {
-        let tasksVM = TasksViewModel()
-        self.tasksVM = tasksVM
-        self.tasksWindowService = .init(with: tasksVM)
-        self.createTaskWindowService = .init(with: tasksVM)
+    init(
+        pomodoroTimerVM: PomodoroTimerViewModel,
+        openTasksWindow: @escaping () -> Void,
+        openCreateTaskWindow: @escaping () -> Void
+    ) {
         self.pomodoroTimerVM = pomodoroTimerVM
       
         allCommands = [
-            Command(title: "Open Tasks",  keyword: "tasks") { [weak self] in self?.openTasksWindow() },
+            Command(title: "Open Tasks",  keyword: "tasks") { openTasksWindow() },
             Command(title: "Start Pomodoro 25", keyword: "pomodoro") { [weak self] in self?.pomodoroTimerVM.start(minutes: 25) },
             Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
-            Command(title: "New Task", keyword: "task") { [weak self] in self?.openCreateTaskWindow() }
+            Command(title: "New Task", keyword: "task") { openCreateTaskWindow() }
         ]
 
         $query
@@ -54,9 +50,6 @@ final class SearchViewModel: ObservableObject {
         
         suggestions = allCommands
     }
-    
-    private func openTasksWindow() { tasksWindowService.show() }
-    private func openCreateTaskWindow() { createTaskWindowService.show() }
     
 
     private func startPomodoroIfNecessary() {
