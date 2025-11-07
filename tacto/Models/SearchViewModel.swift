@@ -6,31 +6,42 @@ import AppKit
 final class SearchViewModel: ObservableObject {
     @Published var query: String = ""
     @Published private(set) var suggestions: [Command] = []
-    @Published var selectedIndex: Int = 0   // текущая выделенная строка
-
+    @Published var selectedIndex: Int = 0   // <— текущая выделенная строка
+    
+    private let tasksVM: TasksViewModel
+    private let tasksWindowService: TasksWindowService
+    private let createTaskWindowService: CreateTaskWindowService
+    
     var onSubmit: ((Command?) -> Void)?
     var onCancel: (() -> Void)?
-
+    
+    // Базовые команды для пустого ввода
     private var allCommands: [Command] = []
-
+    
     private let spotlightApps  = SpotlightService()
     private let spotlightFiles = SpotlightService()
-
+    
     var defaultWebEngine: WebEngine = .google
-
+    
     private var bag = Set<AnyCancellable>()
     private var generation = 0 // защита от гонок
     private var currentApps:  [Command] = []
     private var currentFiles: [Command] = []
+
     let pomodoroTimerVM: PomodoroTimerViewModel
 
     init(pomodoroTimerVM: PomodoroTimerViewModel) {
+        let tasksVM = TasksViewModel()
+        self.tasksVM = tasksVM
+        self.tasksWindowService = .init(with: tasksVM)
+        self.createTaskWindowService = .init(with: tasksVM)
         self.pomodoroTimerVM = pomodoroTimerVM
+      
         allCommands = [
-            Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
+            Command(title: "Open Tasks",  keyword: "tasks") { [weak self] in self?.openTasksWindow() },
             Command(title: "Start Pomodoro 25", keyword: "pomodoro") { [weak self] in self?.pomodoroTimerVM.start(minutes: 25) },
             Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
-            Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
+            Command(title: "New Task", keyword: "task") { [weak self] in self?.openCreateTaskWindow() }
         ]
 
         $query
@@ -40,9 +51,13 @@ final class SearchViewModel: ObservableObject {
                 self?.buildSuggestions(for: text)
             }
             .store(in: &bag)
-
+        
         suggestions = allCommands
     }
+    
+    private func openTasksWindow() { tasksWindowService.show() }
+    private func openCreateTaskWindow() { createTaskWindowService.show() }
+    
 
     private func startPomodoroIfNecessary() {
         let pattern = #"pomodoro\s*(\d+)"#
@@ -54,7 +69,7 @@ final class SearchViewModel: ObservableObject {
 
     private func buildSuggestions(for text: String) {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
-
+        
         guard !trimmed.isEmpty else {
             spotlightApps.stop()
             spotlightFiles.stop()
@@ -145,14 +160,14 @@ final class SearchViewModel: ObservableObject {
             selectedIndex = suggestions.isEmpty ? 0 : 0
         }
     }
-
+    
     // MARK: - Навигация
     func moveSelection(_ delta: Int) {
         guard !suggestions.isEmpty else { return }
         let newIndex = max(0, min(selectedIndex + delta, suggestions.count - 1))
         selectedIndex = newIndex
     }
-
+    
     func submitSelected() {
         guard suggestions.indices.contains(selectedIndex) else {
             onSubmit?(nil)
