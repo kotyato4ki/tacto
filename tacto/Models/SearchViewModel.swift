@@ -8,11 +8,12 @@ final class SearchViewModel: ObservableObject {
     @Published private(set) var suggestions: [Command] = []
     @Published var selectedIndex: Int = 0   // <— текущая выделенная строка
     
+    private let tasksVM = TasksViewModel()
     private var tasksWindowService: TasksWindowService?
+    private var createTaskWindowService: CreateTaskWindowService?
     
     var onSubmit: ((Command?) -> Void)?
     var onCancel: (() -> Void)?
-    var onOpenTasks: (() -> Void)?
     
     // Базовые команды для пустого ввода
     private var allCommands: [Command] = []
@@ -31,11 +32,14 @@ final class SearchViewModel: ObservableObject {
         allCommands = [
             Command(title: "Open Tasks", keyword: "tasks") { [weak self] in
                 print("Action: Open Tasks")
-                self?.onOpenTasks?()
+                self?.openTasksWindow()
             },
             Command(title: "Start Pomodoro", keyword: "pomodoro") { print("Action: Start Pomodoro") },
             Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
-            Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
+            Command(title: "New Task", keyword: "task") { [weak self] in
+                print("Action: Create New Task")
+                self?.openCreateTaskWindow()
+            }
         ]
         
         $query
@@ -47,18 +51,21 @@ final class SearchViewModel: ObservableObject {
             .store(in: &bag)
         
         suggestions = allCommands
-        
-        self.onOpenTasks = { [weak self] in
-            self?.openTasksWindow()
-        }
     }
     
     private func openTasksWindow() {
         // Создаем или показываем окно с задачами
         if tasksWindowService == nil {
-            tasksWindowService = TasksWindowService()
+            tasksWindowService = TasksWindowService(with: tasksVM)
         }
         tasksWindowService?.show()
+    }
+    
+    private func openCreateTaskWindow() {
+        if createTaskWindowService == nil {
+            createTaskWindowService = CreateTaskWindowService(with: tasksVM)
+        }
+        createTaskWindowService?.show()
     }
     
     private func buildSuggestions(for text: String) {

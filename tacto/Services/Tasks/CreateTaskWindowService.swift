@@ -1,31 +1,28 @@
 //
-//  TasksWindowService.swift
+//  CreateTaskWindowService.swift
 //  tacto
 //
-//  Created by Nick on 06.11.2025.
+//  Created by Nick on 07.11.2025.
 //
-
 
 import SwiftUI
 import AppKit
 
 @MainActor
-final class TasksWindowService: ObservableObject {
+final class CreateTaskWindowService: ObservableObject {
     private var window: NSWindow?
     private var tasksVM: TasksViewModel
     
-    private var tasksWindowService: TasksWindowService?
-    
-    init() {
-        self.tasksVM = TasksViewModel()
+    init(with tasksVM: TasksViewModel) {
+        self.tasksVM = tasksVM
         setupWindow()
     }
     
     private func setupWindow() {
-        let taskListView = TaskList(tasksVM: tasksVM)
+        let createTaskView = CreateTaskView(tasksVM: tasksVM)
             .frame(minWidth: 400, idealWidth: 500, minHeight: 400, idealHeight: 600)
         
-        let hostingController = NSHostingController(rootView: taskListView)
+        let hostingController = NSHostingController(rootView: createTaskView)
         
         window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 500, height: 600),
@@ -34,7 +31,7 @@ final class TasksWindowService: ObservableObject {
             defer: false
         )
         
-        window?.title = "Tasks"
+        window?.title = "Create Task"
         window?.center()
         window?.contentViewController = hostingController
         window?.isReleasedWhenClosed = false // предотвращаем освобождение памяти при закрытии
@@ -62,11 +59,11 @@ final class TasksWindowService: ObservableObject {
     }
 }
 
-// Делегат для обработки закрытия окна
+
 private class WindowDelegate: NSObject, NSWindowDelegate {
-    private weak var service: TasksWindowService?
+    private weak var service: CreateTaskWindowService?
     
-    init(service: TasksWindowService) {
+    init(service: CreateTaskWindowService) {
         self.service = service
     }
     
