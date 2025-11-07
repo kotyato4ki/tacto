@@ -28,7 +28,7 @@ final class SearchViewModel: ObservableObject {
         self.pomodoroTimerVM = pomodoroTimerVM
         allCommands = [
             Command(title: "Open Tasks",  keyword: "tasks") { print("Action: Open Tasks") },
-            Command(title: "Start Pomodoro", keyword: "pomodoro") { [weak self] in self?.startPomodoroIfNecessary() },
+            Command(title: "Start Pomodoro 25", keyword: "pomodoro") { [weak self] in self?.pomodoroTimerVM.start(minutes: 25) },
             Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
             Command(title: "New Task", keyword: "task") { print("Action: Create New Task") }
         ]
