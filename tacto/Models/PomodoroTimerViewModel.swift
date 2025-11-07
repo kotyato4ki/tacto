@@ -33,6 +33,7 @@ final class PomodoroTimerViewModel: ObservableObject {
     
     func stop() {
         timer?.invalidate()
+        remainingSeconds = 0
         isActive = false
     }
 }
