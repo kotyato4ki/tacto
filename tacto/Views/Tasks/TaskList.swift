@@ -26,7 +26,7 @@ struct TaskList: View {
                 List {
                     ForEach(tasksVM.tasks) { task in
                         NavigationLink(destination: TaskView(task: task, tasksVM: tasksVM)) {
-                            TaskPreview(task: task)
+                            TaskPreview(task: task, tasksVM: tasksVM)
                                 .frame(maxWidth: .infinity)
                                 .background(Color(NSColor.windowBackgroundColor))
                                 .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -42,5 +42,5 @@ struct TaskList: View {
 }
 
 #Preview {
-    TaskList(tasksVM: TasksViewModel(tasks: TaskModel.getMockTasks()))
+    TaskList(tasksVM: TasksViewModel())
 }

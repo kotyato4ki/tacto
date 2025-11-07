@@ -12,15 +12,12 @@ import AppKit
 @MainActor
 final class TasksWindowService: ObservableObject {
     private var window: NSWindow?
-    private var tasks: [TaskModel] = []
     private var tasksVM: TasksViewModel
     
     private var tasksWindowService: TasksWindowService?
     
     init() {
-        // Загружаем тестовые данные или реальные данные
-        self.tasks = TaskModel.getMockTasks()
-        self.tasksVM = TasksViewModel(tasks: tasks)
+        self.tasksVM = TasksViewModel()
         setupWindow()
     }
     

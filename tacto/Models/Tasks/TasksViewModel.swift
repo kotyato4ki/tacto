@@ -11,33 +11,25 @@ import SwiftData
 
 @MainActor
 final class TasksViewModel: ObservableObject {
-    @Published var tasks: [TaskModel] = []
+    var tasks: [TaskModel] = []
     @Published var lastChangedTask: TaskModel?
+    @Published var taskToDelete: TaskModel?
     
-    private var tasksSubscription: AnyCancellable?
     private var lastChangedTaskSubscription: AnyCancellable?
+    private var taskToDeleteSubscription: AnyCancellable?
     
     private let container: ModelContainer
     
     
-    init(tasks: [TaskModel]) {
-        self.tasks = tasks
+    init() {
         do {
             self.container = try ModelContainer(for: TaskDTO.self)
         } catch {
             fatalError("Can't create SwiftData container: \(error)")
         }
         
-        let fetchDescriptor = FetchDescriptor<TaskDTO>(
-            sortBy: [SortDescriptor(\.deadline, order: .forward)]
-        )
-        let tasksDTO: [TaskDTO] = (try? self.container.mainContext.fetch(fetchDescriptor)) ?? []
-        self.tasks = tasksDTO.map { TaskModel(from: $0) }
+        self.tasks = fetchTasks()
         
-        tasksSubscription = $tasks
-            .sink { tasks in
-                tasks.forEach { print($0.name) }
-            }
         
         lastChangedTaskSubscription = $lastChangedTask
             .sink { [weak self] task in
@@ -50,6 +42,27 @@ final class TasksViewModel: ObservableObject {
                     self?.upsertTask(from: task)
                 }
             }
+        
+        
+        taskToDeleteSubscription = $taskToDelete
+            .sink { [weak self] task in
+                if let self = self, let task = task {
+                    self.tasks.removeAll(where: { $0.id == task.id })
+                    self.deleteTask(withId: task.id)
+                }
+            }
+    }
+    
+    private func fetchTasks() -> [TaskModel] {
+        let context = container.mainContext
+        
+        do {
+            let descriptor = FetchDescriptor<TaskDTO>(
+                sortBy: [SortDescriptor(\.deadline, order: .forward)]
+            )
+            let tasksDTO: [TaskDTO] = (try? context.fetch(descriptor)) ?? []
+            return tasksDTO.map { TaskModel(from: $0) }
+        }
     }
     
     private func upsertTask(from model: TaskModel) {
@@ -70,6 +83,23 @@ final class TasksViewModel: ObservableObject {
             try context.save()
         } catch {
             print("Failed to upsert task: \(error)")
+        }
+    }
+    
+    private func deleteTask(withId id: UUID) {
+        let context = container.mainContext
+        
+        do {
+            let descriptor = FetchDescriptor<TaskDTO>(
+                predicate: #Predicate { $0.id == id }
+            )
+            if let taskToDelete = try context.fetch(descriptor).first {
+                context.delete(taskToDelete)
+            }
+            
+            try context.save()
+        } catch {
+            print("Failed to delete task: \(error)")
         }
     }
 }

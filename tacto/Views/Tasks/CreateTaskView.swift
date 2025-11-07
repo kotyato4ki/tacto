@@ -39,6 +39,5 @@ struct CreateTaskView: View {
 }
 
 #Preview {
-    let tasksVM = TasksViewModel(tasks: TaskModel.getMockTasks())
-    CreateTaskView(tasksVM: tasksVM)
+    CreateTaskView(tasksVM: TasksViewModel())
 }

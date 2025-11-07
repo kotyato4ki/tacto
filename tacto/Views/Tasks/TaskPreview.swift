@@ -9,12 +9,23 @@ import SwiftUI
 
 struct TaskPreview: View {
     var task: TaskModel
+    @ObservedObject var tasksVM: TasksViewModel
     
     var body: some View {
         
         VStack(alignment: .leading, spacing: 12) {
-            Text(task.name)
-                .font(.title)
+            HStack {
+                Text(task.name)
+                    .font(.title)
+                
+                Spacer()
+                
+                Button {
+                    tasksVM.taskToDelete = task
+                } label: {
+                    Text("Delete")
+                }
+            }
             
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 12) {
@@ -82,5 +93,7 @@ struct TaskPreview: View {
 }
 
 #Preview {
-    TaskPreview(task: TaskModel.getMockTasks()[4])
+    let tasks = TaskModel.getMockTasks()
+    let tasksVM = TasksViewModel()
+    TaskPreview(task: tasks[4], tasksVM: tasksVM)
 }

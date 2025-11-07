@@ -113,6 +113,6 @@ struct TaskView: View {
 
 #Preview {
     let tasks = TaskModel.getMockTasks()
-    let tasksVM = TasksViewModel(tasks: tasks)
+    let tasksVM = TasksViewModel()
     TaskView(task: tasks[4], tasksVM: tasksVM)
 }
