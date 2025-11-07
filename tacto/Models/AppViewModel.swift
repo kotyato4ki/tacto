@@ -4,37 +4,53 @@ import Combine
 @MainActor
 final class AppViewModel: ObservableObject {
     @Published private(set) var isLauncherVisible = false
+    @Published private(set) var isPomodoroVisible = false
 
     let searchVM: SearchViewModel
-    var onShow: (() -> Void)?
-    var onHide: (() -> Void)?
+    let pomodoroTimerVM: PomodoroTimerViewModel
 
-    init(searchVM: SearchViewModel) {
+    var onShowLauncher: (() -> Void)?
+    var onHideLauncher: (() -> Void)?
+    var onHidePomodoro: (() -> Void)?
+
+    init(searchVM: SearchViewModel, pomodoroTimerVM: PomodoroTimerViewModel) {
         self.searchVM = searchVM
-
-        // Закрываем окно после выполнения/отмены
+        self.pomodoroTimerVM = pomodoroTimerVM
+        
         self.searchVM.onSubmit = { [weak self] command in
-            command?.action()    // action не опционален, команда — да
-            self?.hideLauncher()
-        }
-        self.searchVM.onCancel = { [weak self] in
-            self?.hideLauncher()
+            guard let self, let command = command else { return }
+            command.action()
+            if command.keyword == "pomodoro" {
+                self.hideLauncher()
+            } else {
+                self.hideLauncher()
+            }
         }
     }
 
     func showLauncher() {
         guard !isLauncherVisible else { return }
         isLauncherVisible = true
-        onShow?()
+        onShowLauncher?()
     }
 
     func hideLauncher() {
         guard isLauncherVisible else { return }
         isLauncherVisible = false
-        onHide?()
+        onHideLauncher?()
     }
 
     func toggleLauncher() {
         isLauncherVisible ? hideLauncher() : showLauncher()
+    }
+
+    func hidePomodoro() {
+        guard isPomodoroVisible else { return }
+        isPomodoroVisible = false
+        onHidePomodoro?()
+    }
+    
+    func togglePomodoro() {
+        hidePomodoro()
     }
 }
