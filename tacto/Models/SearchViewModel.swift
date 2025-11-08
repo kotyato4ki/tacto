@@ -35,7 +35,7 @@ final class SearchViewModel: ObservableObject {
       
         allCommands = [
             Command(title: "Open Tasks",  keyword: "tasks") { openTasksWindow() },
-            Command(title: "Start Pomodoro 25", keyword: "pomodoro") { [weak self] in self?.pomodoroTimerVM.start(minutes: 25) },
+            Command(title: "Start Timer 25", keyword: "timer") { [weak self] in self?.pomodoroTimerVM.start(minutes: 25) },
             Command(title: "Clipboard", keyword: "clip") { print("Action: Open Clipboard Manager") },
             Command(title: "New Task", keyword: "task") { openCreateTaskWindow() }
         ]
@@ -53,7 +53,7 @@ final class SearchViewModel: ObservableObject {
     
 
     private func startPomodoroIfNecessary() {
-        let pattern = #"pomodoro\s*(\d+)"#
+        let pattern = #"timer\s*(\d+)"#
         if let match = query.range(of: pattern, options: .regularExpression),
            let minutes = Int(query[match].components(separatedBy: " ").last ?? "") {
             pomodoroTimerVM.start(minutes: minutes)
@@ -83,8 +83,8 @@ final class SearchViewModel: ObservableObject {
         if let minutes = extractPomodoroMinutes(from: trimmed) {
             extraCommands.append(
                 Command(
-                    title: "Start Pomodoro for \(minutes) min",
-                    keyword: "pomodoro",
+                    title: "Start Timer for \(minutes) min",
+                    keyword: "timer",
                     action: { [weak self] in
                         self?.pomodoroTimerVM.start(minutes: minutes)
                     }
@@ -129,7 +129,7 @@ final class SearchViewModel: ObservableObject {
     }
 
     private func extractPomodoroMinutes(from text: String) -> Int? {
-        let pattern = #"pomodoro[\s:]+(\d+)"#
+        let pattern = #"timer[\s:]+(\d+)"#
         if let match = text.range(of: pattern, options: .regularExpression) {
             let captured = text[match].split(separator: " ").last
             return captured.flatMap { Int($0) }

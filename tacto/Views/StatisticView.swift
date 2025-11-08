@@ -14,7 +14,7 @@ struct StatisticView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Pomodoro Statistics")
+            Text("Timer Statistics")
                 .font(.title2)
                 .bold()
                 .frame(maxWidth: .infinity, alignment: .center)

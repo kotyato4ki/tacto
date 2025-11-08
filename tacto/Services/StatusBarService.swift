@@ -33,7 +33,7 @@ final class StatusBarService {
         openItem.target = self
         let quitItem = NSMenuItem(title: "Quit", action: #selector(quitApp), keyEquivalent: "q")
         quitItem.target = self
-        let showTimerItem = NSMenuItem(title: "Pomodoro Timer", action: #selector(togglePopover), keyEquivalent: "p")
+        let showTimerItem = NSMenuItem(title: "Timer", action: #selector(togglePopover), keyEquivalent: "p")
         showTimerItem.target = self
         let tasksItem = NSMenuItem(title: "Tasks", action: #selector(openTasks), keyEquivalent: "t")
         tasksItem.target = self
