@@ -10,8 +10,8 @@ final class HotKeyService {
 
     init(onActivate: @escaping () -> Void,
          combos: [Combo] = [
-            // ⌘ Space — как у Spotlight (требует освободить шорткат в настройках)
-            Combo(keyCode: UInt32(kVK_Space), modifiers: UInt32(cmdKey)),
+            // opt Space — основной
+            Combo(keyCode: UInt32(kVK_Space), modifiers: UInt32(optionKey)),
             // ⌘⇧ Space — запасной, если основной занят
             Combo(keyCode: UInt32(kVK_Space), modifiers: UInt32(cmdKey | shiftKey))
          ]) {
