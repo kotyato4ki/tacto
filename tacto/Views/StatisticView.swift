@@ -10,7 +10,7 @@ import SwiftUI
 struct StatisticView: View {
     @State private var showToday = true
 
-    private let statsService = PomodoroStatsService.shared
+    @ObservedObject private var statsService = PomodoroStatsService.shared
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
