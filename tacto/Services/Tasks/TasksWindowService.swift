@@ -21,7 +21,7 @@ final class TasksWindowService: ObservableObject {
     
     private func setupWindow() {
         let taskListView = TaskList(tasksVM: tasksVM)
-            .frame(minWidth: 400, idealWidth: 500, minHeight: 400, idealHeight: 600)
+            .frame(minWidth: 600, idealWidth: 700, minHeight: 400, idealHeight: 600)
         
         let hostingController = NSHostingController(rootView: taskListView)
         
