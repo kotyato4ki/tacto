@@ -5,11 +5,11 @@
 
 import Foundation
 
-final class PomodoroStatsService {
+final class PomodoroStatsService: ObservableObject {
     static let shared = PomodoroStatsService()
     private let key = "PomodoroSessions"
 
-    private var sessions: [PomodoroSession] = []
+    @Published private(set) var sessions: [PomodoroSession] = []
 
     private init() {
         load()
