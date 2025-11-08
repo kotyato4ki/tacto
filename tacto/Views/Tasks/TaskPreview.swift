@@ -1,0 +1,107 @@
+//
+//  TaskPreview.swift
+//  tacto
+//
+//  Created by Nick on 06.11.2025.
+//
+
+import SwiftUI
+
+struct TaskPreview: View {
+    var task: TaskModel
+    @ObservedObject var tasksVM: TasksViewModel
+    @Binding var selectedTag: String?
+    
+    var body: some View {
+        
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Text(task.name)
+                    .font(.title)
+                
+                Spacer()
+                
+                Button {
+                    tasksVM.taskToDelete = task
+                } label: {
+                    Text("Delete")
+                }
+            }
+            
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 12) {
+                    Label(task.status.rawValue, systemImage: "circle.fill")
+                        .font(.subheadline)
+                        .foregroundColor(TaskModel.color(for: task.status))
+                    
+                    Label(task.priority.rawValue, systemImage: "flag.fill")
+                        .font(.subheadline)
+                        .foregroundColor(TaskModel.color(for: task.priority))
+                }
+                .frame(width: 100, alignment: .leading)
+                
+                if (task.startDate != nil || task.deadline != nil) {
+                    Divider()
+                        .padding(.horizontal, 5)
+                        .frame(height: 40)
+                } else {
+                    Divider()
+                        .opacity(0)
+                        .padding(.horizontal, 5)
+                        .frame(height: 40)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    if let startDate = task.startDate {
+                        HStack {
+                            Text("Start date:")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Text(startDate, style: .date)
+                                .font(.body)
+                        }
+                    }
+                    
+                    if let deadline = task.deadline {
+                        HStack {
+                            Text("Deadline:")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                            Text(deadline, style: .date)
+                                .font(.body)
+                        }
+                    }
+                }
+                .frame(width: 200, alignment: .leading)
+            }
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(task.tags, id: \.self) { tag in
+                        Button {
+                            selectedTag = tag
+                        }
+                        label: {
+                            Text("#\(tag)")
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(PlainButtonStyle())
+                    }
+                }
+                .padding(.horizontal)
+            }
+        }
+        .frame(width: 350)
+        .padding(12)
+    }
+}
+
+#Preview {
+    let tasks = TaskModel.getMockTasks()
+    let tasksVM = TasksViewModel()
+    @State var selectedTag: String? = nil
+    TaskPreview(task: tasks[4], tasksVM: tasksVM, selectedTag: $selectedTag)
+}
