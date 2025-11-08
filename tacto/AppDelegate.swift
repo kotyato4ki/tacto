@@ -26,6 +26,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let appVM = AppViewModel(searchVM: searchVM, pomodoroTimerVM: pomodoroTimerVM)
         self.appVM = appVM
 
+        // Старт сервиса буфера обмена
+        _ = ClipboardService.shared
+
         // Вью (SwiftUI), которое будет в плавающем окне
         let rootView = SearchView(vm: searchVM, onClose: { [weak self] in
             self?.appVM?.hideLauncher()
@@ -61,9 +64,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         
         self.statusBar = statusBar
 
-        let hotKey = HotKeyService(optionSpaceHandler: { [weak self] in
-            self?.appVM?.toggleLauncher() }
-        )
+        let hotKey = HotKeyService(onActivate: { [weak self] in
+            self?.appVM?.toggleLauncher()
+        })
         self.hotKey = hotKey
 
         // Подписка VM → UI-сервис
