@@ -17,6 +17,8 @@ struct TaskList: View {
         filterTasks(from: tasksVM.tasks)
     }
     
+    @State private var tag: String? = nil
+    
     var body: some View {
         NavigationStack {
             
@@ -49,6 +51,34 @@ struct TaskList: View {
                     .menuStyle(.borderlessButton)
                     .fixedSize()
                     
+                    if let tag = tag {
+                        HStack(alignment: .center, spacing: 4) {
+                            Text("#\(tag)")
+                                .font(.callout)
+                                .padding(.leading, 6)
+                            
+                            Button {
+                                self.tag = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.white.opacity(0.8))
+                                    .padding(4)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                        .padding(.vertical, 4)
+                        .padding(.horizontal, 8)
+                        .background(
+                            Capsule()
+                                .fill(Color.accentColor.opacity(0.2))
+                        )
+                        .overlay(
+                            Capsule()
+                                .stroke(Color.accentColor.opacity(0.4))
+                        )
+                    }
+                    
                     Spacer()
                     
                     NavigationLink {
@@ -72,7 +102,11 @@ struct TaskList: View {
                 List {
                     ForEach(currentTasks) { task in
                         NavigationLink(destination: TaskView(task: task, tasksVM: tasksVM)) {
-                            TaskPreview(task: task, tasksVM: tasksVM)
+                            TaskPreview(
+                                task: task,
+                                tasksVM: tasksVM,
+                                selectedTag: $tag
+                            )
                                 .frame(maxWidth: .infinity)
                                 .background(Color(NSColor.windowBackgroundColor))
                                 .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -107,6 +141,11 @@ struct TaskList: View {
             
             if let status = filter.showWithStatus {
                 filteredTasks = filteredTasks.filter { $0.status == status }
+            }
+        }
+        
+        if let tag = tag {
+            filteredTasks = filteredTasks.filter { $0.tags.contains(tag)
             }
         }
         

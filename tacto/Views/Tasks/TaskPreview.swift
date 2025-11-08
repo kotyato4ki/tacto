@@ -10,6 +10,7 @@ import SwiftUI
 struct TaskPreview: View {
     var task: TaskModel
     @ObservedObject var tasksVM: TasksViewModel
+    @Binding var selectedTag: String?
     
     var body: some View {
         
@@ -77,11 +78,17 @@ struct TaskPreview: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
                     ForEach(task.tags, id: \.self) { tag in
-                        Text("#\(tag)")
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 6)
-                            .background(Color.gray.opacity(0.2))
-                            .cornerRadius(10)
+                        Button {
+                            selectedTag = tag
+                        }
+                        label: {
+                            Text("#\(tag)")
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.gray.opacity(0.2))
+                                .cornerRadius(10)
+                        }
+                        .buttonStyle(PlainButtonStyle())
                     }
                 }
                 .padding(.horizontal)
@@ -95,5 +102,6 @@ struct TaskPreview: View {
 #Preview {
     let tasks = TaskModel.getMockTasks()
     let tasksVM = TasksViewModel()
-    TaskPreview(task: tasks[4], tasksVM: tasksVM)
+    @State var selectedTag: String? = nil
+    TaskPreview(task: tasks[4], tasksVM: tasksVM, selectedTag: $selectedTag)
 }
