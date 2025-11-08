@@ -84,8 +84,9 @@ final class ClipboardService {
 
     private var storeURL: URL {
         let fm = FileManager.default
-        let dir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first!
-        let appDir = dir.appendingPathComponent("tacto", conformingTo: .directory)
+        let baseDir = fm.urls(for: .applicationSupportDirectory, in: .userDomainMask).first
+            ?? fm.homeDirectoryForCurrentUser.appendingPathComponent("Library/Application Support", isDirectory: true)
+        let appDir = baseDir.appendingPathComponent("tacto", conformingTo: .directory)
         if !fm.fileExists(atPath: appDir.path) {
             try? fm.createDirectory(at: appDir, withIntermediateDirectories: true)
         }
@@ -106,7 +107,9 @@ final class ClipboardService {
         timer = Timer.scheduledTimer(withTimeInterval: 0.35, repeats: true) { [weak self] _ in
             self?.poll()
         }
-        RunLoop.main.add(timer!, forMode: .common)
+        if let timer = timer {
+            RunLoop.main.add(timer, forMode: .common)
+        }
     }
 
     func stop() {
