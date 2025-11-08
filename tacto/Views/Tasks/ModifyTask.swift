@@ -14,8 +14,8 @@ struct ModifyTask: View {
     let originalTask: TaskModel
     
     var body: some View {
-        ScrollView {
-            VStack(spacing: 16) {
+        ScrollView(showsIndicators: false) {
+            VStack(alignment: .center, spacing: 16) {
                 
                 // MARK: Name, Priority, Status
                 TextField("Name", text: $editableTask.name)

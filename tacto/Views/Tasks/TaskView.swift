@@ -57,6 +57,7 @@ struct TaskView: View {
                             }
                         }
                     }
+                    .frame(minWidth: 225)
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 12)
@@ -82,6 +83,7 @@ struct TaskView: View {
                         
                         NavigationLink(
                             destination: ModifyTask(editableTask: $tempTask, originalTask: task)
+                                .frame(minWidth: 500, maxWidth: 600)
                                 .onAppear {
                                     tempTask = EditableTaskModel(from: task)
                                 }
@@ -108,6 +110,7 @@ struct TaskView: View {
             }
             .padding()
         }
+        .frame(minWidth: 600, minHeight: 400)
     }
 }
 
