@@ -14,7 +14,7 @@ struct PomodoroTimerView: View {
         VStack(alignment: .leading, spacing: 8) {
             if vm.isActive {
                 VStack(spacing: 4) {
-                    Text("🍅 Pomodoro")
+                    Text("⏱️ Timer")
                         .font(.headline)
                         .foregroundColor(.secondary)
 
